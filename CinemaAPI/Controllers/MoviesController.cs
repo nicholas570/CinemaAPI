@@ -1,5 +1,6 @@
 ﻿using CinemaAPI.Data;
 using CinemaAPI.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -21,43 +22,68 @@ namespace CinemaAPI.Controllers
         }
         // GET: api/<MoviesController>
         [HttpGet]
-        public IEnumerable<Movie> Get()
+        public IActionResult Get()
         {
-            return _dbContext.Movies;
+           return Ok(_dbContext.Movies);
         }
 
         // GET api/<MoviesController>/5
         [HttpGet("{id}")]
-        public Movie Get(int id)
+        public IActionResult Get(int id)
         {
-            return _dbContext.Movies.Find(id);
+            var movie = _dbContext.Movies.Find(id);
+            if (movie == null)
+            {
+                return NotFound("No record found");
+            }
+            else
+            { 
+                return Ok(movie);
+            }
         }
 
         // POST api/<MoviesController>
         [HttpPost]
-        public void Post([FromBody] Movie movie)
+        public IActionResult Post([FromBody] Movie movie)
         {
             _dbContext.Movies.Add(movie);
             _dbContext.SaveChanges();
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         // PUT api/<MoviesController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Movie newMovie)
+        public IActionResult Put(int id, [FromBody] Movie newMovie)
         {
             var movie = _dbContext.Movies.Find(id);
-            movie.Name = newMovie.Name;
-            movie.Language = newMovie.Language;
-            _dbContext.SaveChanges();
+            if (movie == null)
+            {
+                return NotFound("No record found");
+            }
+            else
+            {
+                movie.Name = newMovie.Name;
+                movie.Language = newMovie.Language;
+                _dbContext.SaveChanges();
+                return Ok("Record updated succesfully");
+            }
         }
 
         // DELETE api/<MoviesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
             var movie = _dbContext.Movies.Find(id);
-            _dbContext.Movies.Remove(movie);
-            _dbContext.SaveChanges();
+            if (movie == null)
+            {
+                return NotFound("No record found");
+            }
+            else
+            {
+                _dbContext.Movies.Remove(movie);
+                _dbContext.SaveChanges();
+                return Ok("Record deleted");
+            }
         }
     }
 }
